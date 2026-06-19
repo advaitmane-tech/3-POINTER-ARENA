@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3 Point Arena — Train. Compete. Level Up.</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090d;--bg2:#0e1018;--surface:#13161f;--surface2:#1a1e2e;--bg4:#1e2330;
+  --orange:#ff6b00;--orange2:#ff8c33;--gold:#f5c518;--cyan:#00d4ff;
+  --green:#00e676;--purple:#8b5cf6;--red:#ff4444;
+  --text:#f0f2f8;--text2:#8892a4;--text3:#4a5468;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --r:14px;--r2:10px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;
+  justify-content:space-between;padding:0 6%;height:68px;
+  background:rgba(8,9,13,0.9);backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);transition:background .3s}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--orange);
+  letter-spacing:2px;cursor:pointer}
+.nav-logo span{color:var(--text)}
+.nav-links{display:flex;gap:32px;list-style:none}
+.nav-links a{font-size:13px;color:var(--text2);text-decoration:none;
+  font-weight:500;transition:color .2s;cursor:pointer}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{background:var(--orange);color:#fff;font-size:13px;font-weight:700;
+  padding:9px 22px;border-radius:24px;text-decoration:none;transition:opacity .2s;cursor:pointer}
+.nav-cta:hover{opacity:.88}
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;z-index:300;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.open{display:flex}
+.modal-box{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:24px;width:100%;max-width:520px;max-height:88vh;
+  overflow-y:auto;position:relative;scrollbar-width:thin;
+  scrollbar-color:var(--surface2) transparent;
+}
+.modal-close{
+  position:absolute;top:16px;right:16px;
+  width:32px;height:32px;border-radius:50%;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text2);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s;z-index:10;
+}
+.modal-close:hover{background:var(--surface)}
+.modal-hero{
+  background:linear-gradient(135deg,rgba(255,107,0,.12),rgba(255,107,0,.03));
+  border-bottom:1px solid var(--border);padding:32px 28px 24px;
+}
+.modal-icon{font-size:40px;margin-bottom:10px}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:36px;
+  letter-spacing:1px;color:var(--text);margin-bottom:6px}
+.modal-desc{font-size:13px;color:var(--text2);line-height:1.6}
+.modal-body{padding:24px 28px;display:flex;flex-direction:column;gap:14px}
+
+/* stat cards inside modal */
+.m-stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.m-stat-card{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r2);padding:14px}
+.m-stat-card .sv{font-size:28px;font-weight:700}
+.m-stat-card .sl{font-size:10px;color:var(--text2);margin-top:3px}
+.m-stat-card .ss{font-size:10px;margin-top:4px}
+
+/* bar */
+.bar-row{display:flex;flex-direction:column;gap:5px}
+.bar-label{display:flex;justify-content:space-between;font-size:11px}
+.bar-label span:first-child{color:var(--text2)}
+.bar-track{height:7px;background:var(--bg4);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+
+/* streak dots */
+.streak-wrap{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r2);padding:14px}
+.streak-label{font-size:11px;color:var(--text2);margin-bottom:10px}
+.streak-dots{display:flex;gap:5px;flex-wrap:wrap}
+.sdot{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:12px;font-weight:700}
+.sdot.hit{background:rgba(255,107,0,.18);color:var(--orange);border:1px solid rgba(255,107,0,.3)}
+.sdot.miss{background:var(--bg4);color:var(--text3);border:1px solid var(--border)}
+.sdot.cur{background:rgba(255,107,0,.35);color:var(--orange);border:1px solid var(--orange)}
+
+/* leaderboard */
+.lb-list{display:flex;flex-direction:column;gap:7px}
+.lb-row{display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r2);padding:10px 12px}
+.lb-row.you{border-color:rgba(255,107,0,.4);background:rgba(255,107,0,.06)}
+.lb-rank{font-size:13px;font-weight:700;width:22px;flex-shrink:0}
+.lb-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.lb-info{flex:1}
+.lb-name{font-size:12px;font-weight:600;color:var(--text)}
+.lb-sub{font-size:10px;color:var(--text2)}
+.lb-score{font-size:13px;font-weight:700;color:var(--orange)}
+
+/* heatmap */
+.hmap{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.hz{border-radius:8px;padding:10px 4px;text-align:center;cursor:default}
+.hz .hp{font-size:14px;font-weight:700}
+.hz .hn{font-size:8px;margin-top:2px}
+.hz-hot{background:rgba(255,107,0,.22)}.hz-hot .hp{color:var(--orange2)}.hz-hot .hn{color:rgba(255,107,0,.7)}
+.hz-warm{background:rgba(245,197,24,.18)}.hz-warm .hp{color:var(--gold)}.hz-warm .hn{color:rgba(245,197,24,.7)}
+.hz-cold{background:rgba(0,212,255,.1)}.hz-cold .hp{color:var(--cyan)}.hz-cold .hn{color:rgba(0,212,255,.6)}
+.hz-colder{background:rgba(90,100,120,.18)}.hz-colder .hp{color:var(--text2)}.hz-colder .hn{color:var(--text3)}
+
+/* mission */
+.mission-card{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r2);padding:13px 14px;display:flex;align-items:center;gap:12px}
+.m-icon-box{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-size:16px;flex-shrink:0}
+.m-body{flex:1}
+.m-title{font-size:12px;font-weight:700;color:var(--text)}
+.m-prog{font-size:10px;color:var(--text2);margin-top:2px}
+.m-xp{font-size:12px;font-weight:700;color:var(--orange)}
+
+/* ai bubble */
+.ai-bubble{background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--r);padding:16px}
+.ai-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ai-av{width:34px;height:34px;border-radius:50%;background:rgba(255,107,0,.12);
+  border:1.5px solid rgba(255,107,0,.3);display:flex;align-items:center;
+  justify-content:center;font-size:16px}
+.ai-name{font-size:12px;font-weight:700;color:var(--orange)}
+.ai-tag{font-size:9px;color:var(--text3)}
+.ai-text{font-size:12px;color:var(--text2);line-height:1.7}
+.ai-text strong{color:var(--text)}
+
+/* timer display */
+.timer-big{font-size:64px;font-weight:700;color:var(--cyan);text-align:center;
+  font-family:'Bebas Neue',sans-serif;letter-spacing:2px;line-height:1}
+
+/* chart */
+.chart-bars{display:flex;align-items:flex-end;gap:7px;height:90px}
+.cb-wrap{flex:1;display:flex;flex-direction:column;align-items:center;
+  gap:4px;height:100%;justify-content:flex-end}
+.cb-bar{width:100%;border-radius:4px 4px 0 0}
+.cb-lbl{font-size:9px;color:var(--text3)}
+
+.modal-start-btn{
+  width:100%;background:var(--orange);color:#fff;font-size:15px;font-weight:700;
+  padding:15px;border-radius:var(--r);border:none;cursor:pointer;
+  font-family:'Inter',sans-serif;transition:opacity .2s;margin-top:4px
+}
+.modal-start-btn:hover{opacity:.88}
+
+.pill-up{display:inline-flex;align-items:center;gap:4px;font-size:10px;
+  padding:3px 9px;border-radius:12px;background:rgba(0,230,118,.1);color:var(--green)}
+.pill-down{display:inline-flex;align-items:center;gap:4px;font-size:10px;
+  padding:3px 9px;border-radius:12px;background:rgba(255,68,68,.1);color:var(--red)}
+
+/* ── WEBSITE SECTIONS ── */
+.hero-section{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:120px 6% 80px;position:relative;overflow:hidden
+}
+.hero-section::before{
+  content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);
+  width:900px;height:900px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,107,0,.1) 0%,transparent 70%);
+  pointer-events:none
+}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,107,0,.08);border:1px solid rgba(255,107,0,.22);
+  color:var(--orange);font-size:11px;font-weight:700;
+  padding:6px 14px;border-radius:20px;letter-spacing:1px;
+  text-transform:uppercase;margin-bottom:28px}
+.hero-title{font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(68px,10vw,140px);line-height:.92;letter-spacing:2px}
+.hero-title .l1{color:var(--text);display:block}
+.hero-title .l2{color:var(--orange);display:block}
+.hero-tag{font-size:clamp(14px,2vw,20px);color:var(--text2);
+  font-weight:400;margin:24px 0 40px;letter-spacing:4px;text-transform:uppercase}
+.hero-tag span{color:var(--text);font-weight:700}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:64px}
+.btn-p{background:var(--orange);color:#fff;font-size:15px;font-weight:700;
+  padding:16px 36px;border-radius:32px;text-decoration:none;
+  transition:transform .2s,opacity .2s;cursor:pointer;border:none;
+  font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:8px}
+.btn-p:hover{transform:translateY(-2px);opacity:.9}
+.btn-s{background:transparent;color:var(--text);font-size:15px;font-weight:600;
+  padding:16px 36px;border-radius:32px;text-decoration:none;cursor:pointer;
+  border:1px solid var(--border2);transition:border-color .2s;
+  font-family:'Inter',sans-serif}
+.btn-s:hover{border-color:var(--orange);color:var(--orange)}
+.hero-stats{display:flex;gap:48px;justify-content:center;flex-wrap:wrap;
+  padding-top:48px;border-top:1px solid var(--border);width:100%;max-width:600px}
+.hs-val{font-family:'Bebas Neue',sans-serif;font-size:44px;color:var(--orange);
+  letter-spacing:1px;line-height:1}
+.hs-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;
+  letter-spacing:1px;margin-top:4px}
+.divider{width:100%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--orange),transparent);opacity:.25}
+
+section{padding:90px 6%}
+.sec-eye{font-size:10px;color:var(--orange);text-transform:uppercase;
+  letter-spacing:2px;font-weight:700;margin-bottom:12px}
+.sec-title{font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(36px,6vw,70px);letter-spacing:1px;line-height:1;margin-bottom:14px}
+.sec-sub{font-size:15px;color:var(--text2);max-width:500px;line-height:1.7}
+
+/* TRAINING MODES GRID */
+.modes-section{background:var(--bg2)}
+.modes-header{text-align:center;margin-bottom:56px}
+.modes-header .sec-sub{margin:0 auto}
+.modes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
+  gap:14px;max-width:1100px;margin:0 auto}
+.mode-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:28px 26px;cursor:pointer;
+  transition:border-color .2s,transform .2s,background .2s;position:relative;overflow:hidden
+}
+.mode-card::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,107,0,.06),transparent);
+  opacity:0;transition:opacity .2s}
+.mode-card:hover{border-color:var(--orange);transform:translateY(-3px)}
+.mode-card:hover::before{opacity:1}
+.mode-card:active{transform:scale(.98)}
+.mc-icon{font-size:36px;margin-bottom:16px}
+.mc-name{font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px}
+.mc-desc{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:14px}
+.mc-tag{display:inline-block;font-size:10px;font-weight:700;
+  padding:4px 10px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px}
+.mc-stat{font-size:13px;font-weight:700;margin-top:12px}
+.open-btn{
+  margin-top:14px;width:100%;background:rgba(255,107,0,.1);
+  border:1px solid rgba(255,107,0,.25);color:var(--orange);
+  font-size:12px;font-weight:700;padding:10px;border-radius:10px;
+  cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s
+}
+.open-btn:hover{background:rgba(255,107,0,.2)}
+
+/* RANKS */
+.ranks-section{text-align:center}
+.ranks-grid{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+  max-width:900px;margin:0 auto}
+.rank-card{flex:1;min-width:110px;max-width:145px;background:var(--surface);
+  border:1px solid var(--border);border-radius:16px;padding:22px 14px;
+  text-align:center;transition:transform .2s,border-color .2s;cursor:default}
+.rank-card:hover{transform:translateY(-4px)}
+.rc-icon{font-size:30px;margin-bottom:8px}
+.rc-name{font-size:13px;font-weight:700;margin-bottom:4px}
+.rc-range{font-size:10px;color:var(--text3)}
+.bronze{border-color:rgba(180,120,60,.3)}.bronze .rc-name{color:#c87a30}
+.silver{border-color:rgba(192,200,216,.3)}.silver .rc-name{color:#c0c8d8}
+.rc-gold{border-color:rgba(245,197,24,.35)}.rc-gold .rc-name{color:var(--gold)}
+.platinum{border-color:rgba(0,212,255,.3)}.platinum .rc-name{color:var(--cyan)}
+.diamond{border-color:rgba(139,92,246,.35)}.diamond .rc-name{color:var(--purple)}
+.hof{border-color:rgba(245,197,24,.5);background:rgba(245,197,24,.04)}.hof .rc-name{color:var(--gold)}
+
+/* MARKET */
+.market-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+  max-width:1100px;margin:56px auto 0}
+.mk-card{background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:28px 24px}
+.mk-val{font-family:'Bebas Neue',sans-serif;font-size:50px;color:var(--orange);
+  line-height:1;letter-spacing:1px}
+.mk-lbl{font-size:12px;color:var(--text2);margin-top:6px}
+.mk-desc{font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6}
+.mk-wide{grid-column:1/-1;
+  background:linear-gradient(135deg,rgba(255,107,0,.08),rgba(255,107,0,.02));
+  border:1px solid rgba(255,107,0,.2);border-radius:16px;padding:28px 32px;
+  display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.mk-big{font-family:'Bebas Neue',sans-serif;font-size:58px;color:var(--green);
+  line-height:1;letter-spacing:1px}
+.mk-big-lbl{font-size:13px;color:var(--text2);margin-top:6px}
+.mk-big-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.mk-right{font-size:13px;color:var(--text2);max-width:380px;line-height:1.8}
+.mk-right strong{color:var(--text)}
+
+/* WHY */
+.why-section{background:var(--bg2)}
+.why-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:14px;max-width:1100px;margin:56px auto 0}
+.why-card{background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:28px 24px}
+.why-num{font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--orange);
+  opacity:.12;line-height:1;margin-bottom:8px}
+.why-card h4{font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px}
+.why-card p{font-size:12px;color:var(--text2);line-height:1.7}
+
+/* PITCH */
+.pitch-section{text-align:center;padding:120px 6%;position:relative;overflow:hidden}
+.pitch-section::before{content:'';position:absolute;bottom:-200px;left:50%;
+  transform:translateX(-50%);width:700px;height:700px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,107,0,.07) 0%,transparent 70%);
+  pointer-events:none}
+.pitch-quote{font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(28px,5vw,60px);line-height:1.12;letter-spacing:1px;
+  max-width:800px;margin:0 auto 40px}
+.pitch-quote em{color:var(--orange);font-style:normal}
+
+footer{background:var(--bg2);border-top:1px solid var(--border);
+  padding:44px 6%;display:flex;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;gap:20px}
+.foot-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;
+  color:var(--orange);letter-spacing:2px}
+.foot-logo span{color:var(--text)}
+.foot-links{display:flex;gap:22px}
+.foot-links a{font-size:12px;color:var(--text3);text-decoration:none;cursor:pointer}
+.foot-links a:hover{color:var(--text2)}
+.foot-copy{font-size:11px;color:var(--text3)}
+
+.reveal{opacity:0;transform:translateY(24px);
+  transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:768px){
+  .nav-links{display:none}
+  .market-grid{grid-template-columns:1fr 1fr}
+  .mk-wide{flex-direction:column}
+  footer{flex-direction:column;text-align:center}
+  .hero-stats{gap:24px}
+}
+@media(max-width:500px){
+  .market-grid{grid-template-columns:1fr}
+  .ranks-grid{gap:6px}
+  .rank-card{min-width:88px;padding:16px 10px}
+  .modal-box{border-radius:16px}
+  .m-stats-grid{grid-template-columns:1fr 1fr}
+}
+
+.ctab{flex:1;padding:8px 6px;border:none;background:transparent;color:var(--text2);
+  font-size:11px;font-weight:600;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;
+  transition:all .2s}
+.ctab.active{background:var(--orange);color:#fff}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo" onclick="scrollTo(0,0)">3PT <span>ARENA</span></div>
+  <ul class="nav-links">
+    <li><a onclick="document.getElementById('modes').scrollIntoView({behavior:'smooth'})">Training</a></li>
+    <li><a onclick="document.getElementById('ranks').scrollIntoView({behavior:'smooth'})">Ranks</a></li>
+    <li><a onclick="document.getElementById('market').scrollIntoView({behavior:'smooth'})">Market</a></li>
+    <li><a onclick="openModal('compete')">Compete</a></li>
+    <li><a onclick="document.getElementById('pitch').scrollIntoView({behavior:'smooth'})">Pitch</a></li>
+  </ul>
+  <a class="nav-cta" onclick="document.getElementById('modes').scrollIntoView({behavior:'smooth'})">Start Training →</a>
+</nav>
+
+<!-- ══ MODALS ══ -->
+
+<!-- FREE THROW -->
+<div class="modal-overlay" id="modal-freethrow">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('freethrow')">✕</button>
+    <div class="modal-hero">
+      <div class="modal-icon">🎯</div>
+      <div class="modal-title">FREE THROW MODE</div>
+      <div class="modal-desc">Track every make and miss. Your accuracy builds your rank and earns XP each session.</div>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:6px">Shooting Accuracy</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:72px;color:var(--orange);line-height:1">72%</div>
+        <span class="pill-up">↑ +5% today</span>
+      </div>
+      <div class="m-stats-grid">
+        <div class="m-stat-card"><div class="sv">50</div><div class="sl">Attempts</div><div class="ss" style="color:var(--text2)">This session</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--green)">36</div><div class="sl">Makes</div><div class="ss" style="color:var(--green)">Success</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--orange)">240</div><div class="sl">XP Earned</div><div class="ss" style="color:var(--text2)">Session</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--gold)">78%</div><div class="sl">Personal Best</div><div class="ss" style="color:var(--text2)">All time</div></div>
+      </div>
+      <div class="streak-wrap">
+        <div class="streak-label">Session history (last 8)</div>
+        <div class="streak-dots">
+          <div class="sdot hit">✓</div><div class="sdot hit">✓</div><div class="sdot miss">✗</div>
+          <div class="sdot hit">✓</div><div class="sdot hit">✓</div><div class="sdot hit">✓</div>
+          <div class="sdot miss">✗</div><div class="sdot cur">●</div>
+        </div>
+      </div>
+      <div class="ai-bubble">
+        <div class="ai-head"><div class="ai-av">🤖</div><div><div class="ai-name">Coach ARIA</div><div class="ai-tag">Free Throw Analysis</div></div></div>
+        <div class="ai-text">Your free throw accuracy <strong>dropped 5% this week</strong>. Focus on your follow-through. Complete the recommended <strong>10-minute shooting drill</strong> to get back on track.</div>
+      </div>
+      <button class="modal-start-btn">🎯 Start Free Throw Session</button>
+    </div>
+  </div>
+</div>
+
+<!-- LAYUP -->
+<div class="modal-overlay" id="modal-layup">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('layup')">✕</button>
+    <div class="modal-hero" style="background:linear-gradient(135deg,rgba(0,230,118,.1),rgba(0,230,118,.02))">
+      <div class="modal-icon">💪</div>
+      <div class="modal-title">LAYUP MODE</div>
+      <div class="modal-desc">Track left and right hand success rates. Build your weaker side with data-driven drill plans.</div>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:6px">Overall Accuracy</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:72px;color:var(--green);line-height:1">84%</div>
+        <span class="pill-up">↑ +3% vs last week</span>
+      </div>
+      <div class="m-stats-grid">
+        <div class="m-stat-card">
+          <div class="sv" style="color:var(--green)">91%</div><div class="sl">Right Hand</div>
+          <div style="height:5px;background:var(--bg4);border-radius:3px;margin-top:8px;overflow:hidden">
+            <div style="height:100%;width:91%;background:var(--green);border-radius:3px"></div></div>
+        </div>
+        <div class="m-stat-card">
+          <div class="sv" style="color:var(--orange)">76%</div><div class="sl">Left Hand</div>
+          <div style="height:5px;background:var(--bg4);border-radius:3px;margin-top:8px;overflow:hidden">
+            <div style="height:100%;width:76%;background:var(--orange);border-radius:3px"></div></div>
+        </div>
+        <div class="m-stat-card"><div class="sv">64</div><div class="sl">Total Attempts</div><div class="ss" style="color:var(--text2)">Today</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--gold)">320</div><div class="sl">XP Earned</div><div class="ss" style="color:var(--text2)">Today</div></div>
+      </div>
+      <div class="ai-bubble">
+        <div class="ai-head"><div class="ai-av">🤖</div><div><div class="ai-name">Coach ARIA</div><div class="ai-tag">Layup Analysis</div></div></div>
+        <div class="ai-text">Your <strong>left-hand layup is 15% weaker</strong> than your right. Try the off-hand finishing drill — <strong>10 reps each side</strong> before your next session.</div>
+      </div>
+      <button class="modal-start-btn" style="background:var(--green)">💪 Start Layup Session</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3-POINT -->
+<div class="modal-overlay" id="modal-threepoint">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('threepoint')">✕</button>
+    <div class="modal-hero" style="background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(0,212,255,.02))">
+      <div class="modal-icon">🏀</div>
+      <div class="modal-title">3-POINT CHALLENGE</div>
+      <div class="modal-desc">Live streak counter, shooting percentage, and session leaderboard. Compete from behind the arc.</div>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:6px">Shooting Percentage</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:72px;color:var(--cyan);line-height:1">58%</div>
+        <span class="pill-up">↑ Streak: 6 🔥</span>
+      </div>
+      <div class="m-stats-grid">
+        <div class="m-stat-card"><div class="sv" style="color:var(--orange)">6 🔥</div><div class="sl">Current Streak</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--gold)">11</div><div class="sl">Best Streak</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--cyan)">#4</div><div class="sl">Session Rank</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--green)">380</div><div class="sl">XP Earned</div></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:10px">Session Leaderboard</div>
+        <div class="lb-list">
+          <div class="lb-row"><span class="lb-rank" style="color:var(--gold)">#1</span><div class="lb-av" style="background:#7c3aed">CK</div><div class="lb-info"><div class="lb-name">CourtKing</div><div class="lb-sub">Diamond</div></div><span class="lb-score">74%</span></div>
+          <div class="lb-row"><span class="lb-rank" style="color:#c0c8d8">#2</span><div class="lb-av" style="background:#0d9488">HM</div><div class="lb-info"><div class="lb-name">HoopMaster</div><div class="lb-sub">Platinum</div></div><span class="lb-score">68%</span></div>
+          <div class="lb-row"><span class="lb-rank" style="color:#c87a30">#3</span><div class="lb-av" style="background:#b45309">J9</div><div class="lb-info"><div class="lb-name">JumpShot99</div><div class="lb-sub">Gold</div></div><span class="lb-score">61%</span></div>
+          <div class="lb-row you"><span class="lb-rank" style="color:var(--orange)">#4</span><div class="lb-av" style="background:var(--orange)">AM</div><div class="lb-info"><div class="lb-name" style="color:var(--orange)">You (Advait)</div><div class="lb-sub">Gold</div></div><span class="lb-score">58%</span></div>
+        </div>
+      </div>
+      <button class="modal-start-btn" style="background:var(--cyan);color:#000">🏀 Beat Your Streak</button>
+    </div>
+  </div>
+</div>
+
+<!-- DRIBBLE -->
+<div class="modal-overlay" id="modal-dribble">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('dribble')">✕</button>
+    <div class="modal-hero" style="background:linear-gradient(135deg,rgba(245,197,24,.1),rgba(245,197,24,.02))">
+      <div class="modal-icon">⚡</div>
+      <div class="modal-title">DRIBBLE CHALLENGE</div>
+      <div class="modal-desc">Timed drills that score your speed and ball control. See where you're elite and where to improve.</div>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:8px">Time Remaining</div>
+        <div class="timer-big" id="dribble-timer">1:45</div>
+        <div style="margin-top:8px"><span class="pill-up">🟢 Active</span></div>
+      </div>
+      <div class="m-stats-grid">
+        <div class="m-stat-card"><div class="sv" style="color:var(--cyan)">88</div><div class="sl">Speed Score</div><div class="ss" style="color:var(--green)">Top 15%</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--orange)">91</div><div class="sl">Ball Control</div><div class="ss" style="color:var(--green)">Excellent</div></div>
+        <div class="m-stat-card"><div class="sv">142</div><div class="sl">Dribbles</div><div class="ss" style="color:var(--text2)">Session</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--red)">3</div><div class="sl">Fumbles</div><div class="ss" style="color:var(--text2)">Errors</div></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:10px">Speed score — 7 sessions</div>
+        <div class="chart-bars">
+          <div class="cb-wrap"><div class="cb-bar" style="height:55%;background:var(--surface2)"></div><div class="cb-lbl">M</div></div>
+          <div class="cb-wrap"><div class="cb-bar" style="height:62%;background:var(--surface2)"></div><div class="cb-lbl">T</div></div>
+          <div class="cb-wrap"><div class="cb-bar" style="height:58%;background:var(--surface2)"></div><div class="cb-lbl">W</div></div>
+          <div class="cb-wrap"><div class="cb-bar" style="height:70%;background:var(--surface2)"></div><div class="cb-lbl">T</div></div>
+          <div class="cb-wrap"><div class="cb-bar" style="height:76%;background:var(--surface2)"></div><div class="cb-lbl">F</div></div>
+          <div class="cb-wrap"><div class="cb-bar" style="height:84%;background:var(--cyan)"></div><div class="cb-lbl">S</div></div>
+          <div class="cb-wrap"><div class="cb-bar" style="height:88%;background:var(--orange)"></div><div class="cb-lbl">T</div></div>
+        </div>
+      </div>
+      <button class="modal-start-btn" style="background:var(--gold);color:#000">⚡ Start Dribble Drill</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHOOTING MAP -->
+<div class="modal-overlay" id="modal-heatmap">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('heatmap')">✕</button>
+    <div class="modal-hero" style="background:linear-gradient(135deg,rgba(139,92,246,.1),rgba(139,92,246,.02))">
+      <div class="modal-icon">🗺️</div>
+      <div class="modal-title">SHOOTING HEATMAP</div>
+      <div class="modal-desc">See every zone on the court. Colour-coded accuracy tells you exactly where to focus your training.</div>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:12px">Accuracy by zone</div>
+        <div class="hmap">
+          <div class="hz hz-cold"><div class="hp">44%</div><div class="hn">L.Corner</div></div>
+          <div class="hz hz-warm"><div class="hp">57%</div><div class="hn">L.Wing</div></div>
+          <div class="hz hz-hot"><div class="hp">78%</div><div class="hn">Top Key</div></div>
+          <div class="hz hz-warm"><div class="hp">61%</div><div class="hn">R.Wing</div></div>
+          <div class="hz hz-colder"><div class="hp">38%</div><div class="hn">R.Corner</div></div>
+          <div class="hz hz-hot" style="grid-column:2/4"><div class="hp">88%</div><div class="hn">Paint / Layup</div></div>
+          <div class="hz hz-warm"><div class="hp">62%</div><div class="hn">Mid Left</div></div>
+          <div class="hz hz-cold"><div class="hp">49%</div><div class="hn">Mid Right</div></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+          <span style="font-size:9px;color:var(--text3)"><span style="color:var(--orange)">■</span> Hot 70%+</span>
+          <span style="font-size:9px;color:var(--text3)"><span style="color:var(--gold)">■</span> Warm 55–70%</span>
+          <span style="font-size:9px;color:var(--text3)"><span style="color:var(--cyan)">■</span> Cool 45–55%</span>
+          <span style="font-size:9px;color:var(--text3)"><span style="color:var(--text3)">■</span> Cold –45%</span>
+        </div>
+      </div>
+      <div class="m-stats-grid">
+        <div class="m-stat-card"><div class="sv" style="color:var(--green)">Paint</div><div class="sl">Best Zone</div><div class="ss" style="color:var(--green)">88% accuracy</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--red)">R.Corner</div><div class="sl">Weakest Zone</div><div class="ss" style="color:var(--red)">38% accuracy</div></div>
+      </div>
+      <div class="ai-bubble">
+        <div class="ai-head"><div class="ai-av">🤖</div><div><div class="ai-name">Coach ARIA</div><div class="ai-tag">Zone Analysis</div></div></div>
+        <div class="ai-text">Your <strong>right corner 3-pointer is at 38%</strong> — your biggest weakness. I've built you a <strong>spot shooting drill plan</strong> targeting that zone specifically.</div>
+      </div>
+      <button class="modal-start-btn" style="background:var(--purple)">🗺️ Get Zone Drills</button>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY MISSIONS -->
+<div class="modal-overlay" id="modal-missions">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('missions')">✕</button>
+    <div class="modal-hero" style="background:linear-gradient(135deg,rgba(245,197,24,.1),rgba(245,197,24,.02))">
+      <div class="modal-icon">⭐</div>
+      <div class="modal-title">DAILY MISSIONS</div>
+      <div class="modal-desc">New XP challenges every day. Complete all three to max your streak and climb the ranks faster.</div>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">🔥</span>
+        <div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--text)">Day Streak: 9</div><div style="font-size:10px;color:var(--text2)">Complete all missions to keep it alive</div></div>
+        <span style="font-size:12px;font-weight:700;color:var(--orange)">2/3 Done</span>
+      </div>
+      <div class="mission-card">
+        <div class="m-icon-box" style="background:rgba(255,107,0,.12)">🎯</div>
+        <div class="m-body">
+          <div class="m-title">50 Free Throws</div>
+          <div class="m-prog">34 / 50 makes</div>
+          <div style="height:4px;background:var(--bg4);border-radius:2px;margin-top:6px;overflow:hidden">
+            <div style="height:100%;width:68%;background:var(--orange);border-radius:2px"></div></div>
+        </div>
+        <div class="m-xp">+120 XP</div>
+      </div>
+      <div class="mission-card" style="border-color:rgba(0,230,118,.3);background:rgba(0,230,118,.04)">
+        <div class="m-icon-box" style="background:rgba(0,230,118,.12)">⚡</div>
+        <div class="m-body">
+          <div class="m-title">Dribble Drill · 3 min</div>
+          <div class="m-prog" style="color:var(--green)">✓ Completed!</div>
+          <div style="height:4px;background:var(--bg4);border-radius:2px;margin-top:6px;overflow:hidden">
+            <div style="height:100%;width:100%;background:var(--green);border-radius:2px"></div></div>
+        </div>
+        <div class="m-xp" style="color:var(--green)">+80 XP ✓</div>
+      </div>
+      <div class="mission-card" style="border-color:rgba(0,230,118,.3);background:rgba(0,230,118,.04)">
+        <div class="m-icon-box" style="background:rgba(0,230,118,.12)">💪</div>
+        <div class="m-body">
+          <div class="m-title">20 Layups — Both Hands</div>
+          <div class="m-prog" style="color:var(--green)">✓ Completed!</div>
+          <div style="height:4px;background:var(--bg4);border-radius:2px;margin-top:6px;overflow:hidden">
+            <div style="height:100%;width:100%;background:var(--green);border-radius:2px"></div></div>
+        </div>
+        <div class="m-xp" style="color:var(--green)">+100 XP ✓</div>
+      </div>
+      <div class="mission-card">
+        <div class="m-icon-box" style="background:rgba(139,92,246,.12)">🏆</div>
+        <div class="m-body">
+          <div class="m-title">3-Point Challenge · 25 shots</div>
+          <div class="m-prog">0 / 25 shots</div>
+          <div style="height:4px;background:var(--bg4);border-radius:2px;margin-top:6px"></div>
+        </div>
+        <div class="m-xp" style="color:var(--purple)">+200 XP</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px;text-align:center">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px">Total XP available today</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--gold)">500 XP</div>
+        <div style="font-size:10px;color:var(--text3)">180 earned · 320 remaining</div>
+      </div>
+      <button class="modal-start-btn">⭐ Start Next Mission</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ COMPETITION HUB MODAL ══ -->
+<div class="modal-overlay" id="modal-compete">
+  <div class="modal-box" style="max-width:580px">
+    <button class="modal-close" onclick="closeModal('compete')">✕</button>
+    <div class="modal-hero" style="background:linear-gradient(135deg,rgba(245,197,24,.1),rgba(245,197,24,.02))">
+      <div class="modal-icon">🏆</div>
+      <div class="modal-title">COMPETITION HUB</div>
+      <div class="modal-desc">Global leaderboard, friend battles, and live tournaments. Prove your rank means something.</div>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:4px;gap:4px">
+        <button class="ctab active" id="ctab-lb" onclick="switchCTab('lb')">🌍 Global</button>
+        <button class="ctab" id="ctab-friends" onclick="switchCTab('friends')">👥 Friends</button>
+        <button class="ctab" id="ctab-tourn" onclick="switchCTab('tourn')">🏟️ Tournaments</button>
+      </div>
+      <div id="cpanel-lb">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:10px;font-weight:600">GLOBAL RANKING — This Week</div>
+        <div class="lb-list">
+          <div class="lb-row"><span class="lb-rank" style="color:var(--gold)">#1</span><div class="lb-av" style="background:#7c3aed">AK</div><div class="lb-info"><div class="lb-name">AirKing</div><div class="lb-sub">💎 Diamond · 12,400 XP</div></div><span class="lb-score">89%</span></div>
+          <div class="lb-row"><span class="lb-rank" style="color:#c0c8d8">#2</span><div class="lb-av" style="background:#0d9488">MP</div><div class="lb-info"><div class="lb-name">MikePro</div><div class="lb-sub">💠 Platinum · 9,800 XP</div></div><span class="lb-score">82%</span></div>
+          <div class="lb-row"><span class="lb-rank" style="color:#c87a30">#3</span><div class="lb-av" style="background:#b45309">SG</div><div class="lb-info"><div class="lb-name">SlickG</div><div class="lb-sub">💠 Platinum · 8,900 XP</div></div><span class="lb-score">78%</span></div>
+          <div class="lb-row"><span class="lb-rank">#4</span><div class="lb-av" style="background:#374151">HJ</div><div class="lb-info"><div class="lb-name">HoopJr</div><div class="lb-sub">🥇 Gold · 7,600 XP</div></div><span class="lb-score">74%</span></div>
+          <div class="lb-row"><span class="lb-rank">#5</span><div class="lb-av" style="background:#1e40af">CH</div><div class="lb-info"><div class="lb-name">CourtHero</div><div class="lb-sub">🥇 Gold · 7,200 XP</div></div><span class="lb-score">71%</span></div>
+          <div style="text-align:center;padding:8px;font-size:11px;color:var(--text3)">· · ·</div>
+          <div class="lb-row you"><span class="lb-rank" style="color:var(--orange)">#12</span><div class="lb-av" style="background:var(--orange)">AM</div><div class="lb-info"><div class="lb-name" style="color:var(--orange)">You — Advait Mane</div><div class="lb-sub">🥇 Gold · 3,240 XP</div></div><span class="lb-score" style="color:var(--orange)">62%</span></div>
+        </div>
+        <div style="background:rgba(255,107,0,.07);border:1px solid rgba(255,107,0,.2);border-radius:var(--r2);padding:12px;margin-top:10px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:18px">🎯</span>
+          <div style="font-size:11px;color:var(--text2)">You need <strong style="color:var(--orange)">+4% accuracy</strong> to break into the top 10. Coach ARIA has a drill plan ready.</div>
+        </div>
+      </div>
+      <div id="cpanel-friends" style="display:none">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:10px;font-weight:600">FRIENDS LEADERBOARD</div>
+        <div class="lb-list">
+          <div class="lb-row"><span class="lb-rank" style="color:var(--gold)">#1</span><div class="lb-av" style="background:#dc2626">SJ</div><div class="lb-info"><div class="lb-name">Sujal</div><div class="lb-sub">💠 Platinum · Active now 🟢</div></div><span class="lb-score">79%</span></div>
+          <div class="lb-row you"><span class="lb-rank" style="color:var(--orange)">#2</span><div class="lb-av" style="background:var(--orange)">AM</div><div class="lb-info"><div class="lb-name" style="color:var(--orange)">You — Advait</div><div class="lb-sub">🥇 Gold · Now 🟢</div></div><span class="lb-score" style="color:var(--orange)">62%</span></div>
+          <div class="lb-row"><span class="lb-rank" style="color:#c0c8d8">#3</span><div class="lb-av" style="background:#16a34a">DH</div><div class="lb-info"><div class="lb-name">Dhruv</div><div class="lb-sub">🥇 Gold · 1h ago</div></div><span class="lb-score">58%</span></div>
+          <div class="lb-row"><span class="lb-rank">#4</span><div class="lb-av" style="background:#6b7280">AR</div><div class="lb-info"><div class="lb-name">Aarush</div><div class="lb-sub">🥈 Silver · 3h ago</div></div><span class="lb-score">51%</span></div>
+          <div class="lb-row"><span class="lb-rank">#5</span><div class="lb-av" style="background:#065f46">DV</div><div class="lb-info"><div class="lb-name">Deva</div><div class="lb-sub">🥉 Bronze · 5h ago</div></div><span class="lb-score">41%</span></div>
+        </div>
+        <div style="background:rgba(255,107,0,.07);border:1px solid rgba(255,107,0,.2);border-radius:var(--r2);padding:12px;margin-top:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--orange);margin-bottom:4px">⚡ Head-to-Head Challenge</div>
+          <div style="font-size:11px;color:var(--text2)">Sujal is <strong style="color:var(--text)">17% ahead</strong> of you. Challenge him to a 3-Point Shootout to close the gap.</div>
+          <button style="margin-top:8px;background:var(--orange);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Challenge Sujal →</button>
+        </div>
+      </div>
+      <div id="cpanel-tourn" style="display:none">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:10px;font-weight:600">ACTIVE & UPCOMING TOURNAMENTS</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+              <div><div style="font-size:13px;font-weight:700;color:var(--text)">3-Point Shootout</div><div style="font-size:10px;color:var(--text2);margin-top:2px">64 players · Ends in 2h</div></div>
+              <span style="font-size:9px;padding:3px 8px;border-radius:10px;background:rgba(255,68,68,.12);color:var(--red);border:1px solid rgba(255,68,68,.3);font-weight:700">🔴 LIVE</span>
+            </div>
+            <div style="font-size:11px;color:var(--gold);margin-bottom:8px">🏆 2,000 XP + Diamond Badge</div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:10px;color:var(--text3)">48/64 joined</span>
+              <button style="background:var(--orange);color:#fff;border:none;border-radius:16px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Join Now</button>
+            </div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+              <div><div style="font-size:13px;font-weight:700;color:var(--text)">Weekend Free Throw Cup</div><div style="font-size:10px;color:var(--text2);margin-top:2px">128 players · Starts Saturday</div></div>
+              <span style="font-size:9px;padding:3px 8px;border-radius:10px;background:rgba(0,212,255,.1);color:var(--cyan);border:1px solid rgba(0,212,255,.3);font-weight:700">⏳ Soon</span>
+            </div>
+            <div style="font-size:11px;color:var(--gold);margin-bottom:8px">🥇 5,000 XP + Hall of Fame Title</div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:10px;color:var(--text3)">92/128 registered</span>
+              <button style="background:var(--cyan);color:#000;border:none;border-radius:16px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Register</button>
+            </div>
+          </div>
+          <div style="background:rgba(245,197,24,.05);border:1px solid rgba(245,197,24,.3);border-radius:var(--r2);padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+              <div><div style="font-size:13px;font-weight:700;color:var(--text)">Gold Tier Challenge</div><div style="font-size:10px;color:var(--text2);margin-top:2px">32 players · Gold rank only</div></div>
+              <span style="font-size:9px;padding:3px 8px;border-radius:10px;background:rgba(245,197,24,.12);color:var(--gold);border:1px solid rgba(245,197,24,.3);font-weight:700">⭐ Your Tier</span>
+            </div>
+            <div style="font-size:11px;color:var(--gold);margin-bottom:8px">🎖️ 1,500 XP + Gold Trophy</div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:10px;color:var(--text3)">18/32 joined</span>
+              <button style="background:var(--gold);color:#000;border:none;border-radius:16px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Join</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="modal-start-btn">🏆 View Full Leaderboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- RANK MODALS -->
+<div class="modal-overlay" id="modal-rank-bronze">
+  <div class="modal-box" style="max-width:440px">
+    <button class="modal-close" onclick="closeModal('rank-bronze')">✕</button>
+    <div class="modal-hero" style="background:linear-gradient(135deg,rgba(180,120,60,.15),rgba(180,120,60,.03))">
+      <div class="modal-icon">🥉</div><div class="modal-title" style="color:#c87a30">BRONZE RANK</div>
+      <div class="modal-desc">The starting point. Every legend began here. Build fundamentals and shoot your way up.</div>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--surface);border:1px solid rgba(180,120,60,.3);border-radius:var(--r);padding:18px;text-align:center">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px">Required Accuracy</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:60px;color:#c87a30;line-height:1">0–35%</div>
+        <div style="margin-top:8px"><span class="pill-up">✓ Advait passed this — 62%</span></div>
+      </div>
+      <div class="m-stats-grid">
+        <div class="m-stat-card"><div class="sv" style="color:#c87a30">Tier 1</div><div class="sl">Rank Level</div><div class="ss" style="color:var(--text2)">Entry rank</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--green)">✓</div><div class="sl">Your Status</div><div class="ss" style="color:var(--green)">Completed</div></div>
+      </div>
+      <div class="ai-bubble"><div class="ai-head"><div class="ai-av">🤖</div><div><div class="ai-name">Coach ARIA</div><div class="ai-tag">Rank Info</div></div></div><div class="ai-text">Bronze is where everyone starts. You have <strong>cleared this tier</strong>. Focus on consistency to stay above it.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-rank-silver">
+  <div class="modal-box" style="max-width:440px">
+    <button class="modal-close" onclick="closeModal('rank-silver')">✕</button>
+    <div class="modal-hero" style="background:linear-gradient(135deg,rgba(192,200,216,.12),rgba(192,200,216,.02))">
+      <div class="modal-icon">🥈</div><div class="modal-title" style="color:#c0c8d8">SILVER RANK</div>
+      <div class="modal-desc">Fundamentals locked in. Now build consistency and push toward Gold territory.</div>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--surface);border:1px solid rgba(192,200,216,.3);border-radius:var(--r);padding:18px;text-align:center">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px">Required Accuracy</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:60px;color:#c0c8d8;line-height:1">36–50%</div>
+        <div style="margin-top:8px"><span class="pill-up">✓ Advait passed this — 62%</span></div>
+      </div>
+      <div class="m-stats-grid">
+        <div class="m-stat-card"><div class="sv" style="color:#c0c8d8">Tier 2</div><div class="sl">Rank Level</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--green)">✓</div><div class="sl">Your Status</div><div class="ss" style="color:var(--green)">Completed</div></div>
+      </div>
+      <div class="ai-bubble"><div class="ai-head"><div class="ai-av">🤖</div><div><div class="ai-name">Coach ARIA</div></div></div><div class="ai-text">Silver is cleared. To push past Gold, focus on your <strong>free throw consistency</strong> — it is the fastest way to raise your overall accuracy.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-rank-gold">
+  <div class="modal-box" style="max-width:440px">
+    <button class="modal-close" onclick="closeModal('rank-gold')">✕</button>
+    <div class="modal-hero" style="background:linear-gradient(135deg,rgba(245,197,24,.18),rgba(245,197,24,.04));border-bottom:2px solid rgba(245,197,24,.4)">
+      <div style="display:inline-block;background:rgba(245,197,24,.15);border:1px solid rgba(245,197,24,.4);color:var(--gold);font-size:10px;font-weight:700;padding:4px 12px;border-radius:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">⭐ YOUR CURRENT RANK</div>
+      <div class="modal-icon">🥇</div><div class="modal-title" style="color:var(--gold)">GOLD RANK</div>
+      <div class="modal-desc">You are here right now, Advait. Solid accuracy, strong foundation. Platinum is 4% away.</div>
+    </div>
+    <div class="modal-body">
+      <div style="background:rgba(245,197,24,.08);border:2px solid rgba(245,197,24,.4);border-radius:var(--r);padding:18px;text-align:center">
+        <div style="font-size:11px;color:var(--gold);margin-bottom:4px">Required Accuracy</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:60px;color:var(--gold);line-height:1">51–65%</div>
+        <div style="font-size:15px;font-weight:700;color:var(--orange);margin-top:8px">Advait: 62% 🏅 You are here!</div>
+        <div style="margin-top:12px">
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:4px"><span>Gold (51%)</span><span style="color:var(--orange);font-weight:700">You — 62%</span><span>Platinum (66%)</span></div>
+          <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;position:relative">
+            <div style="height:100%;width:73%;background:linear-gradient(90deg,var(--gold),var(--orange));border-radius:4px"></div>
+            <div style="position:absolute;top:0;left:73%;height:100%;width:3px;background:#fff;opacity:.9;border-radius:2px"></div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:5px">4% more = Platinum unlock 💠</div>
+        </div>
+      </div>
+      <div class="m-stats-grid">
+        <div class="m-stat-card" style="border-color:rgba(245,197,24,.3)"><div class="sv" style="color:var(--gold)">62%</div><div class="sl">Your Accuracy</div><div class="ss" style="color:var(--orange)">Active Gold</div></div>
+        <div class="m-stat-card" style="border-color:rgba(245,197,24,.3)"><div class="sv" style="color:var(--cyan)">4%</div><div class="sl">To Platinum</div><div class="ss" style="color:var(--cyan)">Almost there!</div></div>
+        <div class="m-stat-card"><div class="sv">3,240</div><div class="sl">Total XP</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--green)">🔥 9</div><div class="sl">Day Streak</div></div>
+      </div>
+      <div class="ai-bubble"><div class="ai-head"><div class="ai-av">🤖</div><div><div class="ai-name">Coach ARIA</div><div class="ai-tag">Rank Progress</div></div></div><div class="ai-text">You are <strong>73% through Gold</strong>. Your right corner 3-pointer at 38% is dragging your average. Fix that zone and you will hit Platinum <strong>within 2 weeks</strong>.</div></div>
+      <button class="modal-start-btn" onclick="closeModal('rank-gold');openModal('compete')">🏆 Compete to Rank Up</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-rank-platinum">
+  <div class="modal-box" style="max-width:440px">
+    <button class="modal-close" onclick="closeModal('rank-platinum')">✕</button>
+    <div class="modal-hero" style="background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(0,212,255,.02))">
+      <div class="modal-icon">💠</div><div class="modal-title" style="color:var(--cyan)">PLATINUM RANK</div>
+      <div class="modal-desc">Elite territory. Only the most consistent shooters reach Platinum. You are 4% away.</div>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--surface);border:1px solid rgba(0,212,255,.3);border-radius:var(--r);padding:18px;text-align:center">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px">Required Accuracy</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:60px;color:var(--cyan);line-height:1">66–75%</div>
+        <div style="margin-top:8px"><span class="pill-down">🔒 Advait needs +4% to unlock</span></div>
+      </div>
+      <div class="m-stats-grid">
+        <div class="m-stat-card"><div class="sv" style="color:var(--cyan)">+4%</div><div class="sl">Gap to unlock</div><div class="ss" style="color:var(--orange)">62% → 66%</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--text3)">🔒</div><div class="sl">Status</div><div class="ss" style="color:var(--text3)">Locked</div></div>
+      </div>
+      <div class="ai-bubble"><div class="ai-head"><div class="ai-av">🤖</div><div><div class="ai-name">Coach ARIA</div></div></div><div class="ai-text">Fix your <strong>right corner shooting (38%)</strong> and complete the 3-Point Zone Drill 3x this week. You will unlock Platinum faster than you think.</div></div>
+      <button class="modal-start-btn" style="background:var(--cyan);color:#000" onclick="closeModal('rank-platinum');openModal('heatmap')">🗺️ Fix My Weak Zones</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-rank-diamond">
+  <div class="modal-box" style="max-width:440px">
+    <button class="modal-close" onclick="closeModal('rank-diamond')">✕</button>
+    <div class="modal-hero" style="background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(139,92,246,.02))">
+      <div class="modal-icon">💎</div><div class="modal-title" style="color:var(--purple)">DIAMOND RANK</div>
+      <div class="modal-desc">Top 5% of players. Serious ballers only. Locked until you hit 76%.</div>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--surface);border:1px solid rgba(139,92,246,.35);border-radius:var(--r);padding:18px;text-align:center">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px">Required Accuracy</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:60px;color:var(--purple);line-height:1">76–85%</div>
+        <div style="margin-top:8px"><span class="pill-down">🔒 Advait needs +14% to unlock</span></div>
+      </div>
+      <div class="m-stats-grid">
+        <div class="m-stat-card"><div class="sv" style="color:var(--purple)">+14%</div><div class="sl">Gap to unlock</div><div class="ss" style="color:var(--text3)">62% → 76%</div></div>
+        <div class="m-stat-card"><div class="sv" style="color:var(--text3)">🔒</div><div class="sl">Status</div><div class="ss" style="color:var(--text3)">Locked</div></div>
+      </div>
+      <div class="ai-bubble"><div class="ai-head"><div class="ai-av">🤖</div><div><div class="ai-name">Coach ARIA</div></div></div><div class="ai-text">Diamond requires elite consistency across all zones. Hit Platinum first, then we target Diamond together. <strong>Estimated: 4–6 months</strong> of consistent training.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-rank-hof">
+  <div class="modal-box" style="max-width:440px">
+    <button class="modal-close" onclick="closeModal('rank-hof')">✕</button>
+    <div class="modal-hero" style="background:linear-gradient(135deg,rgba(245,197,24,.12),rgba(245,197,24,.02))">
+      <div class="modal-icon">🏆</div><div class="modal-title" style="color:var(--gold)">HALL OF FAME</div>
+      <div class="modal-desc">The pinnacle. Less than 1% of players ever reach here. Legends only.</div>
+    </div>
+    <div class="modal-body">
+      <div style="background:rgba(245,197,24,.05);border:1px solid rgba(245,197,24,.3);border-radius:var(--r);padding:18px;text-align:center">
+        <div style="font-size:11px;color:var(--gold);margin-bottom:4px">Required Accuracy</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:60px;color:var(--gold);line-height:1">86%+</div>
+        <div style="margin-top:8px"><span class="pill-down">🔒 Advait needs +24% to unlock</span></div>
+      </div>
+      <div style="background:rgba(245,197,24,.07);border:1px solid rgba(245,197,24,.2);border-radius:var(--r2);padding:14px">
+        <div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:8px">🌟 Hall of Fame Perks</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="font-size:11px;color:var(--text2)">✓ Exclusive HOF avatar frame</div>
+          <div style="font-size:11px;color:var(--text2)">✓ "Legend" title on global leaderboard</div>
+          <div style="font-size:11px;color:var(--text2)">✓ HOF-only tournaments access</div>
+          <div style="font-size:11px;color:var(--text2)">✓ Gold profile glow effect</div>
+        </div>
+      </div>
+      <div class="ai-bubble"><div class="ai-head"><div class="ai-av">🤖</div><div><div class="ai-name">Coach ARIA</div></div></div><div class="ai-text">Hall of Fame is the dream. Keep your 9-day streak, complete every mission, trust the process. <strong>One rank at a time.</strong></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HERO ══ -->
+<section class="hero-section">
+  <div class="eyebrow">🏀 The Basketball Training Revolution</div>
+  <h1 class="hero-title">
+    <span class="l1">3 POINT</span>
+    <span class="l2">ARENA</span>
+  </h1>
+  <p class="hero-tag"><span>Train.</span> &nbsp;<span>Compete.</span> &nbsp;<span>Level Up.</span></p>
+  <div class="hero-btns">
+    <button class="btn-p" onclick="document.getElementById('modes').scrollIntoView({behavior:'smooth'})">🏀 Start Training — Free</button>
+    <button class="btn-s" onclick="document.getElementById('market').scrollIntoView({behavior:'smooth'})">View Market Research →</button>
+  </div>
+  <div class="hero-stats">
+    <div><div class="hs-val">450M</div><div class="hs-lbl">Basketball Players</div></div>
+    <div><div class="hs-val">6</div><div class="hs-lbl">Training Modes</div></div>
+    <div><div class="hs-val">$25B</div><div class="hs-lbl">Sports Tech Market</div></div>
+  </div>
+</section>
+<div class="divider"></div>
+
+<!-- ══ TRAINING MODES ══ -->
+<section class="modes-section" id="modes">
+  <div class="modes-header reveal">
+    <div class="sec-eye">Training Modes</div>
+    <h2 class="sec-title">PICK YOUR DRILL.<br>DOMINATE THE COURT.</h2>
+    <p class="sec-sub">Six modes built for every skill. Tap any card to open the full training screen.</p>
+  </div>
+  <div class="modes-grid reveal">
+
+    <div class="mode-card" onclick="openModal('freethrow')">
+      <div class="mc-icon">🎯</div>
+      <div class="mc-name">Free Throw Mode</div>
+      <div class="mc-desc">Track every make and miss in real time. Accuracy %, XP earned, and session history all in one place.</div>
+      <span class="mc-tag" style="background:rgba(255,107,0,.12);color:var(--orange)">Accuracy Tracking</span>
+      <div class="mc-stat" style="color:var(--orange)">Best: 78% · Last: 72%</div>
+      <button class="open-btn">Open Free Throw Mode →</button>
+    </div>
+
+    <div class="mode-card" onclick="openModal('layup')">
+      <div class="mc-icon">💪</div>
+      <div class="mc-name">Layup Mode</div>
+      <div class="mc-desc">Separate left and right hand tracking. Build your weaker side with AI-recommended drills after each session.</div>
+      <span class="mc-tag" style="background:rgba(0,230,118,.1);color:var(--green)">Both Hands</span>
+      <div class="mc-stat" style="color:var(--green)">Right: 91% · Left: 76%</div>
+      <button class="open-btn" style="border-color:rgba(0,230,118,.25);color:var(--green);background:rgba(0,230,118,.07)">Open Layup Mode →</button>
+    </div>
+
+    <div class="mode-card" onclick="openModal('threepoint')">
+      <div class="mc-icon">🏀</div>
+      <div class="mc-name">3-Point Challenge</div>
+      <div class="mc-desc">Live streak counter, shooting percentage, and a real-time session leaderboard. Compete from behind the arc.</div>
+      <span class="mc-tag" style="background:rgba(0,212,255,.1);color:var(--cyan)">Live Streaks</span>
+      <div class="mc-stat" style="color:var(--cyan)">Current Streak: 6 🔥 · Best: 11</div>
+      <button class="open-btn" style="border-color:rgba(0,212,255,.25);color:var(--cyan);background:rgba(0,212,255,.07)">Open 3-Point Challenge →</button>
+    </div>
+
+    <div class="mode-card" onclick="openModal('dribble')">
+      <div class="mc-icon">⚡</div>
+      <div class="mc-name">Dribble Challenge</div>
+      <div class="mc-desc">Timed drills that score your speed and ball control separately. 7-session trend chart shows your progress over time.</div>
+      <span class="mc-tag" style="background:rgba(245,197,24,.1);color:var(--gold)">Speed + Control</span>
+      <div class="mc-stat" style="color:var(--gold)">Speed: 88 · Control: 91</div>
+      <button class="open-btn" style="border-color:rgba(245,197,24,.25);color:var(--gold);background:rgba(245,197,24,.07)">Open Dribble Challenge →</button>
+    </div>
+
+    <div class="mode-card" onclick="openModal('heatmap')">
+      <div class="mc-icon">🗺️</div>
+      <div class="mc-name">Shooting Heatmap</div>
+      <div class="mc-desc">Full court accuracy map split into zones — hot, warm, cool, and cold. Find your weakest spot and fix it.</div>
+      <span class="mc-tag" style="background:rgba(139,92,246,.12);color:var(--purple)">Court Zones</span>
+      <div class="mc-stat" style="color:var(--purple)">Best: Paint 88% · Worst: R.Corner 38%</div>
+      <button class="open-btn" style="border-color:rgba(139,92,246,.25);color:var(--purple);background:rgba(139,92,246,.07)">Open Shooting Heatmap →</button>
+    </div>
+
+    <div class="mode-card" onclick="openModal('missions')">
+      <div class="mc-icon">⭐</div>
+      <div class="mc-name">Daily Missions</div>
+      <div class="mc-desc">Three fresh XP challenges every day. Complete them to keep your streak alive and rank up faster than everyone else.</div>
+      <span class="mc-tag" style="background:rgba(245,197,24,.1);color:var(--gold)">Daily XP</span>
+      <div class="mc-stat" style="color:var(--gold)">2/3 Done · 500 XP Available Today</div>
+      <button class="open-btn" style="border-color:rgba(245,197,24,.25);color:var(--gold);background:rgba(245,197,24,.07)">Open Daily Missions →</button>
+    </div>
+
+    <div class="mode-card" onclick="openModal('compete')" style="border-color:rgba(245,197,24,.25)">
+      <div class="mc-icon">🏆</div>
+      <div class="mc-name">Competition Hub</div>
+      <div class="mc-desc">Global leaderboard, friends ranking, head-to-head challenges, and live tournaments all in one place.</div>
+      <span class="mc-tag" style="background:rgba(245,197,24,.1);color:var(--gold)">Compete</span>
+      <div class="mc-stat" style="color:var(--gold)">#12 Global · #2 Friends · 1 Live Tournament</div>
+      <button class="open-btn" style="border-color:rgba(245,197,24,.3);color:var(--gold);background:rgba(245,197,24,.08)">Open Competition Hub →</button>
+    </div>
+
+  </div>
+</section>
+<div class="divider"></div>
+
+<!-- ══ RANKS ══ -->
+<section id="ranks" style="text-align:center;padding:90px 6%">
+  <div class="reveal">
+    <div class="sec-eye">Ranking System</div>
+    <h2 class="sec-title">EARN YOUR RANK.<br>PROVE YOUR GAME.</h2>
+    <p class="sec-sub" style="margin:0 auto 48px">Your shooting accuracy decides your rank. Every percentage point is a step closer to Hall of Fame.</p>
+  </div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:24px">Click any rank to open it — your current rank is highlighted</div>
+  <div class="ranks-grid reveal">
+    <div class="rank-card bronze" onclick="openModal('rank-bronze')" style="cursor:pointer" title="Click to open Bronze"><div class="rc-icon">🥉</div><div class="rc-name">Bronze</div><div class="rc-range">0–35%</div><div style="font-size:9px;color:var(--green);margin-top:6px">✓ Passed</div></div>
+    <div class="rank-card silver" onclick="openModal('rank-silver')" style="cursor:pointer" title="Click to open Silver"><div class="rc-icon">🥈</div><div class="rc-name">Silver</div><div class="rc-range">36–50%</div><div style="font-size:9px;color:var(--green);margin-top:6px">✓ Passed</div></div>
+    <div class="rank-card rc-gold" onclick="openModal('rank-gold')" style="cursor:pointer;border:2px solid var(--gold);box-shadow:0 0 24px rgba(245,197,24,.25);transform:scale(1.05);background:rgba(245,197,24,.07)" title="Your current rank">
+      <div style="font-size:9px;font-weight:700;color:var(--gold);background:rgba(245,197,24,.15);padding:2px 8px;border-radius:8px;margin-bottom:6px;letter-spacing:.5px">YOU ARE HERE</div>
+      <div class="rc-icon">🥇</div><div class="rc-name">Gold</div><div class="rc-range">51–65%</div>
+      <div style="font-size:9px;color:var(--orange);margin-top:6px;font-weight:700">62% · Active 🔥</div>
+    </div>
+    <div class="rank-card platinum" onclick="openModal('rank-platinum')" style="cursor:pointer;opacity:.7" title="Click to open Platinum"><div class="rc-icon">💠</div><div class="rc-name">Platinum</div><div class="rc-range">66–75%</div><div style="font-size:9px;color:var(--text3);margin-top:6px">🔒 Need +4%</div></div>
+    <div class="rank-card diamond" onclick="openModal('rank-diamond')" style="cursor:pointer;opacity:.6" title="Click to open Diamond"><div class="rc-icon">💎</div><div class="rc-name">Diamond</div><div class="rc-range">76–85%</div><div style="font-size:9px;color:var(--text3);margin-top:6px">🔒 Locked</div></div>
+    <div class="rank-card hof" onclick="openModal('rank-hof')" style="cursor:pointer;opacity:.5" title="Click to open Hall of Fame"><div class="rc-icon">🏆</div><div class="rc-name">Hall of Fame</div><div class="rc-range">86%+</div><div style="font-size:9px;color:var(--text3);margin-top:6px">🔒 Locked</div></div>
+  </div>
+</section>
+<div class="divider"></div>
+
+<!-- ══ MARKET ══ -->
+<section id="market" style="padding:90px 6%;background:var(--bg2)">
+  <div class="reveal">
+    <div class="sec-eye">Market Opportunity</div>
+    <h2 class="sec-title">THE NUMBERS<br>DON'T LIE.</h2>
+    <p class="sec-sub">Basketball is the second most played sport on earth. The gamified training market is completely untapped.</p>
+  </div>
+  <div class="market-grid reveal">
+    <div class="mk-card"><div class="mk-val">$25B</div><div class="mk-lbl">Sports Tech Market</div><div class="mk-desc">Growing at 20% annually — one of the fastest expanding sectors in consumer tech.</div></div>
+    <div class="mk-card"><div class="mk-val" style="color:var(--cyan)">$13B</div><div class="mk-lbl">Fitness Apps 2024</div><div class="mk-desc">Users pay for apps that make them feel like they're actually progressing and improving.</div></div>
+    <div class="mk-card"><div class="mk-val" style="color:var(--gold)">450M</div><div class="mk-lbl">Basketball Players</div><div class="mk-desc">Every one of them trains with zero data, zero feedback, and no digital tool built for them.</div></div>
+    <div class="mk-wide">
+      <div><div class="mk-big">$4.5M</div><div class="mk-big-lbl">Monthly Recurring Revenue Potential</div><div class="mk-big-sub">At just 0.1% market capture · 450,000 users × $9.99/mo</div></div>
+      <div class="mk-right"><strong>Three revenue streams:</strong> B2C subscriptions at $9.99/mo unlock AI coaching and advanced analytics. Tournament entry fees run inside the app. B2B licensing sells the platform to schools, academies, and coaching programs. Every user recruits their friends — <strong>the leaderboard is our marketing engine.</strong></div>
+    </div>
+  </div>
+</section>
+<div class="divider"></div>
+
+<!-- ══ WHY ══ -->
+<section style="padding:90px 6%">
+  <div class="reveal" style="text-align:center;margin-bottom:0">
+    <div class="sec-eye">Why 3 Point Arena Wins</div>
+    <h2 class="sec-title">BUILT DIFFERENT.<br>BUILT TO LAST.</h2>
+  </div>
+  <div class="why-grid reveal">
+    <div class="why-card"><div class="why-num">01</div><h4>Retention Is Built In</h4><p>XP, streaks, rank progression, and daily missions mean users open the app every single day — not just when they train. High DAU is what investors price on.</p></div>
+    <div class="why-card"><div class="why-num">02</div><h4>Viral by Design</h4><p>The friends leaderboard is the acquisition engine. Sujal beats Advait. Advait tells Dhruv. Dhruv downloads it. Zero paid acquisition needed to grow.</p></div>
+    <div class="why-card"><div class="why-num">03</div><h4>AI That Actually Helps</h4><p>Coach ARIA doesn't just show data — she builds your weekly plan, spots your weakest zones, and tells you exactly what to drill next.</p></div>
+    <div class="why-card"><div class="why-num">04</div><h4>Blue Ocean Market</h4><p>No competitor combines basketball training, gamification, and AI coaching. HomeCourt has no XP. Strava is for runners. We're first.</p></div>
+  </div>
+</section>
+<div class="divider"></div>
+
+<!-- ══ PITCH ══ -->
+<section class="pitch-section" id="pitch">
+  <div class="sec-eye" style="margin-bottom:20px">The Pitch</div>
+  <p class="pitch-quote reveal">
+    "We're building the <em>Duolingo of basketball</em> — where every player on every court in the world trains smarter, competes globally, and levels up like a video game."
+  </p>
+  <div class="hero-btns reveal">
+    <button class="btn-p" onclick="openModal('freethrow')">🏀 Try Free Throw Mode</button>
+    <button class="btn-s" onclick="document.getElementById('modes').scrollIntoView({behavior:'smooth'})">See All Modes →</button>
+  </div>
+  <p style="font-size:12px;color:var(--text3);margin-top:28px">Train. Compete. Level Up. · 3 Point Arena © 2025</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">3PT <span>ARENA</span></div>
+  <div class="foot-links">
+    <a onclick="document.getElementById('modes').scrollIntoView({behavior:'smooth'})">Training</a>
+    <a onclick="document.getElementById('ranks').scrollIntoView({behavior:'smooth'})">Ranks</a>
+    <a onclick="document.getElementById('market').scrollIntoView({behavior:'smooth'})">Market</a>
+    <a onclick="document.getElementById('pitch').scrollIntoView({behavior:'smooth'})">Pitch</a>
+  </div>
+  <div class="foot-copy">© 2025 3 Point Arena · Built by Advait Mane</div>
+</footer>
+
+<script>
+// Modal open/close
+function openModal(id){
+  document.getElementById('modal-'+id).classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(id){
+  document.getElementById('modal-'+id).classList.remove('open');
+  document.body.style.overflow='';
+}
+// Close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',function(e){
+    if(e.target===this) closeModal(this.id.replace('modal-',''));
+  });
+});
+// Close on Escape
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    document.querySelectorAll('.modal-overlay.open').forEach(el=>{
+      closeModal(el.id.replace('modal-',''));
+    });
+  }
+});
+
+// Scroll reveal
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')});
+},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(r=>obs.observe(r));
+
+// Nav scroll
+window.addEventListener('scroll',()=>{
+  document.getElementById('navbar').style.background=
+    window.scrollY>60?'rgba(8,9,13,.98)':'rgba(8,9,13,.9)';
+});
+
+// Competition Hub tabs
+function switchCTab(tab) {
+  ['lb','friends','tourn'].forEach(t => {
+    document.getElementById('cpanel-' + t).style.display = t === tab ? 'block' : 'none';
+    const btn = document.getElementById('ctab-' + t);
+    if(btn) btn.classList.toggle('active', t === tab);
+  });
+}
+
+// Dribble timer (counts down when modal open)
+let timerInterval=null;
+let timerSec=105;
+function startDribbleTimer(){
+  clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    timerSec=Math.max(0,timerSec-1);
+    const m=Math.floor(timerSec/60);
+    const s=timerSec%60;
+    const el=document.getElementById('dribble-timer');
+    if(el) el.textContent=m+':'+(s<10?'0':'')+s;
+    if(timerSec===0) clearInterval(timerInterval);
+  },1000);
+}
+document.querySelector('[onclick="openModal(\'dribble\')"]').addEventListener('click',()=>{
+  timerSec=105; startDribbleTimer();
+});
+document.getElementById('modal-dribble').querySelector('.modal-close').addEventListener('click',()=>{
+  clearInterval(timerInterval);
+});
+</script>
+</body>
+</html>
